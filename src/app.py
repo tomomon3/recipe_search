@@ -9,7 +9,6 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.models import load_model
 import numpy as np
 from image_process import examine_recipe
-from image_process import recipe_to_Url
 from datetime import datetime
 import os
 import cv2
@@ -21,7 +20,9 @@ app = Flask(__name__)
 
 
 # モデルの読み込み
-model = tf.keras.applications.ResNet152(
+print('model loading...')
+#model = tf.keras.applications.ResNet152(
+model = tf.keras.applications.ResNet50(
     include_top=False,
     weights="imagenet",
     input_tensor=None,
@@ -31,9 +32,11 @@ model = tf.keras.applications.ResNet152(
 )
 
 # fearturesの読み込み
+print('features loading....')
 features = np.load('np_save.npy')
 print('features len : ',len(features))
 # fearturesの画像indexの読み込み
+print('df_idx loading....')
 df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
 print('df_idx len : ',len(df_idx))
 
@@ -54,7 +57,6 @@ def upload_file():
 
         # 猫の種別を調べる関数の実行
         results ,sims= examine_recipe(input_img, model, features)
-        foodImageUrls ,recipeUrls = recipe_to_Url(results ,df_idx)
         print("results")
         print(results)
  
