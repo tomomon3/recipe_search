@@ -49,7 +49,7 @@ def upload_file():
     if request.method == "POST":
         # アプロードされたファイルをいったん保存する
         f = request.files["file"]
-        filepath = "./static/" + datetime.now().strftime("%Y%m%d%H%M%S") + ".png"
+        filepath = "static/" + datetime.now().strftime("%Y%m%d%H%M%S") + ".png"
         f.save(filepath)
         # 画像ファイルを読み込む
         # 画像ファイルをリサイズ
