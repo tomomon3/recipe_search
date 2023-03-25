@@ -32,7 +32,7 @@ model = tf.keras.applications.ResNet50(
 
 # fearturesの読み込み
 print('features loading....')
-features = np.load('np_save.npy')
+features = np.load('np_save50.npy')
 print('features len : ',len(features))
 # fearturesの画像indexの読み込み
 print('df_idx loading....')
@@ -111,7 +111,6 @@ def upload_file():
         no1_recipeTitle=no1_recipeTitle, no2_recipeTitle=no2_recipeTitle, no3_recipeTitle=no3_recipeTitle,
         no4_recipeTitle=no4_recipeTitle, no5_recipeTitle=no5_recipeTitle, no6_recipeTitle=no6_recipeTitle,
         no7_recipeTitle=no7_recipeTitle, no8_recipeTitle=no8_recipeTitle, no9_recipeTitle=no9_recipeTitle)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
