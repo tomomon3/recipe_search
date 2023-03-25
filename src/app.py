@@ -39,9 +39,9 @@ print('df_idx loading....')
 df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
 print('df_idx len : ',len(df_idx))
 
-@app.route("/", methods=["GET","POST"])
+@app.route('/', methods = ['GET', 'POST'])
 def upload_file():
-    if request.method == "POST":
+    if request.method == 'POST':
         print('------POST-------')
         # アプロードされたファイルをいったん保存する
         file = request.files['file']
@@ -107,9 +107,12 @@ def upload_file():
         no4_recipeTitle=no4_recipeTitle, no5_recipeTitle=no5_recipeTitle, no6_recipeTitle=no6_recipeTitle,
         no7_recipeTitle=no7_recipeTitle, no8_recipeTitle=no8_recipeTitle, no9_recipeTitle=no9_recipeTitle)
     
-    elif request.method == "GET":
+    elif request.method == 'GET':
         print('----GET-----')
         return render_template("index.html")
+    
+    else :
+        print('----UNKNOWN method -----')
 
 if __name__ == '__main__':
     app.run(debug=True)
