@@ -24,6 +24,18 @@ app = Flask(__name__)
 def upload_file():
     if request.method == 'POST':
         print('------POST-------')
+        # アプロードされたファイルをいったん保存する
+        file = request.files['file']
+        # 画像書き込み用バッファを確保
+        buf = BytesIO()
+        print('save buffer......')
+        # 画像データをバッファに書き込む
+        file.save(buf)
+        print('Resizing.....')
+        input_img = load_img(buf, target_size=(224, 224))
+        print('-----------------')
+
+
         # モデルの読み込み
         print('model loading...')
         #model = tf.keras.applications.ResNet152(
@@ -43,16 +55,8 @@ def upload_file():
         print('df_idx loading....')
         df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
         print('df_idx len : ',len(df_idx))
-        # アプロードされたファイルをいったん保存する
-        file = request.files['file']
-        # 画像書き込み用バッファを確保
-        buf = BytesIO()
-        print('save buffer......')
-        # 画像データをバッファに書き込む
-        file.save(buf)
-        print('Resizing.....')
-        input_img = load_img(buf, target_size=(224, 224))
-        print('-----------------')
+
+
 
         # 猫の種別を調べる関数の実行
         results ,sims= examine_recipe(input_img, model, features)
