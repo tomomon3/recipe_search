@@ -18,7 +18,6 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-
 # モデルの読み込み
 print('model loading...')
 #model = tf.keras.applications.ResNet152(
@@ -47,15 +46,14 @@ def upload_file():
         return render_template("index.html")
 
     if request.method == "POST":
+
         # アプロードされたファイルをいったん保存する
-        f = request.files["file"]
-        #filepath = "./src/static/" + datetime.now().strftime("%Y%m%d%H%M%S") + ".png"
-        # 
-        filepath = datetime.now().strftime("%Y%m%d%H%M%S") + ".png"
-        f.save(filepath)
-        # 画像ファイルを読み込む
-        # 画像ファイルをリサイズ
-        input_img = load_img(filepath, target_size=(224, 224))
+        file = request.files['file']
+        # 画像書き込み用バッファを確保
+        buf = BytesIO()
+        # 画像データをバッファに書き込む
+        file.save(buf)
+        input_img = load_img(buf, target_size=(224, 224))
 
         # 猫の種別を調べる関数の実行
         results ,sims= examine_recipe(input_img, model, features)
@@ -92,19 +90,13 @@ def upload_file():
         no8_recipeTitle = df_idx['recipeTitle'][results[7]]
         no9_recipeTitle = df_idx['recipeTitle'][results[8]]
 
-        # 画像書き込み用バッファを確保
-        buf = BytesIO()
-        # 画像データをバッファに書き込む
-        input_img.save(buf,format="png")
-
         # バイナリデータをbase64でエンコード
         # utf-8でデコード
         input_img_b64str = base64.b64encode(buf.getvalue()).decode("utf-8") 
-
         # 付帯情報を付与する
         input_img_b64data = "data:image/png;base64,{}".format(input_img_b64str) 
 
-        return render_template("index.html", filepath=filepath, 
+        return render_template("index.html", input_img_b64data=input_img_b64data, 
         no1_foodImageUrl=no1_foodImageUrl, no2_foodImageUrl=no2_foodImageUrl, no3_foodImageUrl=no3_foodImageUrl,
         no4_foodImageUrl=no4_foodImageUrl, no5_foodImageUrl=no5_foodImageUrl, no6_foodImageUrl=no6_foodImageUrl,
         no7_foodImageUrl=no7_foodImageUrl, no8_foodImageUrl=no8_foodImageUrl, no9_foodImageUrl=no9_foodImageUrl,
