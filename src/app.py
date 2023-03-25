@@ -41,10 +41,6 @@ print('df_idx len : ',len(df_idx))
 
 @app.route("/", methods=["GET","POST"])
 def upload_file():
-    if request.method == "GET":
-        print('----GET-----')
-        return render_template("index.html")
-
     if request.method == "POST":
         print('------POST-------')
         # アプロードされたファイルをいったん保存する
@@ -110,6 +106,10 @@ def upload_file():
         no1_recipeTitle=no1_recipeTitle, no2_recipeTitle=no2_recipeTitle, no3_recipeTitle=no3_recipeTitle,
         no4_recipeTitle=no4_recipeTitle, no5_recipeTitle=no5_recipeTitle, no6_recipeTitle=no6_recipeTitle,
         no7_recipeTitle=no7_recipeTitle, no8_recipeTitle=no8_recipeTitle, no9_recipeTitle=no9_recipeTitle)
+    
+    elif request.method == "GET":
+        print('----GET-----')
+        return render_template("index.html")
 
 if __name__ == '__main__':
     app.run(debug=True)
