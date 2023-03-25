@@ -18,31 +18,31 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-# モデルの読み込み
-print('model loading...')
-#model = tf.keras.applications.ResNet152(
-model = tf.keras.applications.ResNet50(
-    include_top=False,
-    weights="imagenet",
-    input_tensor=None,
-    input_shape=None,
-    pooling="avg",
-    classes=1000
-)
-print('-----------------')
-# fearturesの読み込み
-print('features loading....')
-features = np.load('np_save50.npy')
-print('features len : ',len(features))
-# fearturesの画像indexの読み込み
-print('df_idx loading....')
-df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
-print('df_idx len : ',len(df_idx))
+
 
 @app.route('/', methods = ['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         print('------POST-------')
+        # モデルの読み込み
+        print('model loading...')
+        #model = tf.keras.applications.ResNet152(
+        model = tf.keras.applications.ResNet50(
+            include_top=False,
+            weights="imagenet",
+            input_tensor=None,
+            input_shape=None,
+            pooling="avg",
+            classes=1000)
+        print('-----------------')
+        # fearturesの読み込み
+        print('features loading....')
+        features = np.load('np_save50.npy')
+        print('features len : ',len(features))
+        # fearturesの画像indexの読み込み
+        print('df_idx loading....')
+        df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
+        print('df_idx len : ',len(df_idx))
         # アプロードされたファイルをいったん保存する
         file = request.files['file']
         # 画像書き込み用バッファを確保
