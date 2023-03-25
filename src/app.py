@@ -39,15 +39,14 @@ print('df_idx loading....')
 df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
 print('df_idx len : ',len(df_idx))
 
-
 @app.route("/", methods=["GET","POST"])
 def upload_file():
     if request.method == "GET":
+        print('----GET-----')
         return render_template("index.html")
 
     if request.method == "POST":
-        print('-----------------')
-        print('POST')
+        print('------POST-------')
         # アプロードされたファイルをいったん保存する
         file = request.files['file']
         # 画像書き込み用バッファを確保
