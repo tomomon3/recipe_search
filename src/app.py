@@ -1,131 +1,120 @@
-# 必要なモジュールのインポート
-import torch
-from animal import transform, Net # animal.py から前処理とネットワークの定義を読み込み
-from flask import Flask, request, render_template, redirect
-import io
-from PIL import Image
-import base64
-#---
-import numpy as np
-import pandas as pd
+#　参考
+#Python × Flask × Tensorflow.Keras 猫の品種を予測するWebアプリ
+# https://qiita.com/3BMKATYWKA/items/52d1c838eb34133042a3
+
+
+from flask import Flask, render_template, request
 import tensorflow as tf
-from tensorflow.keras.applications import resnet
-from tensorflow.keras.preprocessing import image
-#---
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.models import load_model
+import numpy as np
+from image_process import examine_recipe
+from datetime import datetime
+import os
+import cv2
+import pandas as pd
+import base64
+from io import BytesIO
 
-# 学習済みモデルをもとに推論する
-def predict(img):
-    # ネットワークの準備
-    net = Net().cpu().eval()
-    # # 学習済みモデルの重み（dog_cat.pt）を読み込み
-    # Renderの時
-    #net.load_state_dict(torch.load('./dog_cat.pt', map_location=torch.device('cpu')))
-    # ローカルの時
-    net.load_state_dict(torch.load('./src/dog_cat.pt', map_location=torch.device('cpu')))
-    #　データの前処理
-    img = transform(img)
-    img =img.unsqueeze(0) # 1次元増やす
-    #　推論
-    y = torch.argmax(net(img), dim=1).cpu().detach().numpy()
-    return y
+app = Flask(__name__)
 
-    #---
-    #モデルの読み込み
-    model = tf.keras.applications.ResNet152(
+
+# モデルの読み込み
+print('model loading...')
+#model = tf.keras.applications.ResNet152(
+model = tf.keras.applications.ResNet50(
     include_top=False,
     weights="imagenet",
     input_tensor=None,
     input_shape=None,
     pooling="avg",
     classes=1000
-    )
+)
 
-    # 処理本文
-    #img_path='/content/PekingDuck.jpeg'
-    img = image.load_img(img_path,target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = resnet.preprocess_input(x)
-    batch_tensor = tf.expand_dims(x, axis=0)
-    result = model.predict(batch_tensor)
-    result=np.reshape(result ,-1)
-    results, sims = search(result, features, 9)
-    return results
+# fearturesの読み込み
+print('features loading....')
+features = np.load('np_save.npy')
+print('features len : ',len(features))
+# fearturesの画像indexの読み込み
+print('df_idx loading....')
+df_idx = pd.read_csv('df_idx_all.csv', index_col=0)
+print('df_idx len : ',len(df_idx))
 
 
+@app.route("/", methods=["GET","POST"])
+def upload_file():
+    if request.method == "GET":
+        return render_template("index.html")
 
-#　推論したラベルから犬か猫かを返す関数
-def getName(label):
-    if label==0:
-        return '猫'
-    elif label==1:
-        return '犬'
+    if request.method == "POST":
+        # アプロードされたファイルをいったん保存する
+        f = request.files["file"]
+        #filepath = "./src/static/" + datetime.now().strftime("%Y%m%d%H%M%S") + ".png"
+        filepath = datetime.now().strftime("%Y%m%d%H%M%S") + ".png"
+        f.save(filepath)
+        # 画像ファイルを読み込む
+        # 画像ファイルをリサイズ
+        input_img = load_img(filepath, target_size=(224, 224))
 
-# --計算用関数　ここから
-def cos_sim(v1, v2):
-    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+        # 猫の種別を調べる関数の実行
+        results ,sims= examine_recipe(input_img, model, features)
+        print("results")
+        print(results)
+ 
+        no1_foodImageUrl = df_idx['foodImageUrl'][results[0]]
+        no2_foodImageUrl = df_idx['foodImageUrl'][results[1]]
+        no3_foodImageUrl = df_idx['foodImageUrl'][results[2]]
+        no4_foodImageUrl = df_idx['foodImageUrl'][results[3]]
+        no5_foodImageUrl = df_idx['foodImageUrl'][results[4]]
+        no6_foodImageUrl = df_idx['foodImageUrl'][results[5]]
+        no7_foodImageUrl = df_idx['foodImageUrl'][results[6]]
+        no8_foodImageUrl = df_idx['foodImageUrl'][results[7]]
+        no9_foodImageUrl = df_idx['foodImageUrl'][results[8]]
 
+        no1_recipeUrl = df_idx['recipeUrl'][results[0]]
+        no2_recipeUrl = df_idx['recipeUrl'][results[1]]
+        no3_recipeUrl = df_idx['recipeUrl'][results[2]]
+        no4_recipeUrl = df_idx['recipeUrl'][results[3]]
+        no5_recipeUrl = df_idx['recipeUrl'][results[4]]
+        no6_recipeUrl = df_idx['recipeUrl'][results[5]]
+        no7_recipeUrl = df_idx['recipeUrl'][results[6]]
+        no8_recipeUrl = df_idx['recipeUrl'][results[7]]
+        no9_recipeUrl = df_idx['recipeUrl'][results[8]]
 
-def get_top_n_indexes(array, num):
-    idx = np.argpartition(array, -num)[-num:]
-    return idx[np.argsort(array[idx])][::-1]
+        no1_recipeTitle = df_idx['recipeTitle'][results[0]]
+        no2_recipeTitle = df_idx['recipeTitle'][results[1]]
+        no3_recipeTitle = df_idx['recipeTitle'][results[2]]
+        no4_recipeTitle = df_idx['recipeTitle'][results[3]]
+        no5_recipeTitle = df_idx['recipeTitle'][results[4]]
+        no6_recipeTitle = df_idx['recipeTitle'][results[5]]
+        no7_recipeTitle = df_idx['recipeTitle'][results[6]]
+        no8_recipeTitle = df_idx['recipeTitle'][results[7]]
+        no9_recipeTitle = df_idx['recipeTitle'][results[8]]
 
+        # 画像書き込み用バッファを確保
+        buf = BytesIO()
+        # 画像データをバッファに書き込む
+        input_img.save(buf,format="png")
 
-def search(query_vector, features, num):
-    sims = []
-    for vector in features:
-        sim = cos_sim(query_vector, vector) # ①
-        sims.append(sim)
-    sims = np.array(sims)
-    indexes = get_top_n_indexes(sims, num) # ②
-    return indexes, sims[indexes] # ③
-# --計算用関数　ここまで
+        # バイナリデータをbase64でエンコード
+        # utf-8でデコード
+        input_img_b64str = base64.b64encode(buf.getvalue()).decode("utf-8") 
 
+        # 付帯情報を付与する
+        input_img_b64data = "data:image/png;base64,{}".format(input_img_b64str) 
 
-
-# Flask のインスタンスを作成
-app = Flask(__name__)
-
-# アップロードされる拡張子の制限
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif', 'jpeg'])
-
-#　拡張子が適切かどうかをチェック
-def allwed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# URL にアクセスがあった場合の挙動の設定
-@app.route('/', methods = ['GET', 'POST'])
-def predicts():
-    # リクエストがポストかどうかの判別
-    if request.method == 'POST':
-        # ファイルがなかった場合の処理
-        if 'filename' not in request.files:
-            return redirect(request.url)
-        # データの取り出し
-        file = request.files['filename']
-        # ファイルのチェック
-        if file and allwed_file(file.filename):
-
-            #　画像ファイルに対する処理
-            #　画像書き込み用バッファを確保
-            buf = io.BytesIO()
-            image = Image.open(file).convert('RGB')
-            #　画像データをバッファに書き込む
-            image.save(buf, 'png')
-            #　バイナリデータを base64 でエンコードして utf-8 でデコード
-            base64_str = base64.b64encode(buf.getvalue()).decode('utf-8')
-            #　HTML 側の src  の記述に合わせるために付帯情報付与する
-            base64_data = 'data:image/png;base64,{}'.format(base64_str)
-
-            # 入力された画像に対して推論
-            pred = predict(image)
-            animalName_ = getName(pred)
-            return render_template('result.html', animalName=animalName_, image=base64_data)
-
-    # GET メソッドの定義
-    elif request.method == 'GET':
-        return render_template('index.html')
+        return render_template("index.html", filepath=filepath, 
+        no1_foodImageUrl=no1_foodImageUrl, no2_foodImageUrl=no2_foodImageUrl, no3_foodImageUrl=no3_foodImageUrl,
+        no4_foodImageUrl=no4_foodImageUrl, no5_foodImageUrl=no5_foodImageUrl, no6_foodImageUrl=no6_foodImageUrl,
+        no7_foodImageUrl=no7_foodImageUrl, no8_foodImageUrl=no8_foodImageUrl, no9_foodImageUrl=no9_foodImageUrl,
+        no1_recipeUrl=no1_recipeUrl, no2_recipeUrl=no2_recipeUrl, no3_recipeUrl=no3_recipeUrl,
+        no4_recipeUrl=no4_recipeUrl, no5_recipeUrl=no5_recipeUrl, no6_recipeUrl=no6_recipeUrl,
+        no7_recipeUrl=no7_recipeUrl, no8_recipeUrl=no8_recipeUrl, no9_recipeUrl=no9_recipeUrl,
+        no1_recipeTitle=no1_recipeTitle, no2_recipeTitle=no2_recipeTitle, no3_recipeTitle=no3_recipeTitle,
+        no4_recipeTitle=no4_recipeTitle, no5_recipeTitle=no5_recipeTitle, no6_recipeTitle=no6_recipeTitle,
+        no7_recipeTitle=no7_recipeTitle, no8_recipeTitle=no8_recipeTitle, no9_recipeTitle=no9_recipeTitle)
 
 
-# アプリケーションの実行の定義
 if __name__ == '__main__':
     app.run(debug=True)
+    #app.run(host="0.0.0.0")
