@@ -29,7 +29,7 @@ model = tf.keras.applications.ResNet50(
     pooling="avg",
     classes=1000
 )
-
+print('-----------------')
 # fearturesの読み込み
 print('features loading....')
 features = np.load('np_save50.npy')
