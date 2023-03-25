@@ -23,16 +23,6 @@ def examine_cat_breeds(image, model, cat_list):
     set_result = np.concatenate([cat_sort, preds_sort], 1)
     return set_result[0:3, :]
 
-def recipe_to_Url(results , df_idx):
-    rank = 0
-    foodImageUrls = []
-    recipeUrls = []
-    for result in results: 
-        foodImageUrls.append(df_idx.at[result ,'foodImageUrl']) 
-        recipeUrls.append(df_idx.at[result ,'recipeUrl']) 
-        rank += 1
-    print('Urls len :',len(foodImageUrls))
-    return foodImageUrls , recipeUrls
 
 def examine_recipe(image, model, features):
     x = img_to_array(image)
