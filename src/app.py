@@ -46,20 +46,25 @@ def upload_file():
         return render_template("index.html")
 
     if request.method == "POST":
-
+        print('-----------------')
+        print('POST')
         # アプロードされたファイルをいったん保存する
         file = request.files['file']
         # 画像書き込み用バッファを確保
         buf = BytesIO()
+        print('save buffer......')
         # 画像データをバッファに書き込む
         file.save(buf)
+        print('Resizing.....')
         input_img = load_img(buf, target_size=(224, 224))
+        print('-----------------')
 
         # 猫の種別を調べる関数の実行
         results ,sims= examine_recipe(input_img, model, features)
         print("results")
         print(results)
- 
+        print('-----------------')
+
         no1_foodImageUrl = df_idx['foodImageUrl'][results[0]]
         no2_foodImageUrl = df_idx['foodImageUrl'][results[1]]
         no3_foodImageUrl = df_idx['foodImageUrl'][results[2]]
