@@ -37,9 +37,9 @@ def upload_file():
 
 
         # モデルの読み込み
+        # Resnet 18/34/50/101/105
         print('model loading...')
-        #model = tf.keras.applications.ResNet152(
-        model = tf.keras.applications.ResNet50(
+        model = tf.keras.applications.ResNet105(
             include_top=False,
             weights="imagenet",
             input_tensor=None,
@@ -49,7 +49,8 @@ def upload_file():
         print('-----------------')
         # fearturesの読み込み
         print('features loading....')
-        features = np.load('np_save50.npy')
+        #Resnet152 : np_save.npy / Resnet50 np_save50.npy
+        features = np.load('np_save.npy')
         print('features len : ',len(features))
         # fearturesの画像indexの読み込み
         print('df_idx loading....')
