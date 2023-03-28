@@ -39,7 +39,7 @@ def upload_file():
         # モデルの読み込み
         # Resnet 18/34/50/101/105
         print('model loading...')
-        model = tf.keras.applications.ResNet105(
+        model = tf.keras.applications.ResNet152(
             include_top=False,
             weights="imagenet",
             input_tensor=None,
